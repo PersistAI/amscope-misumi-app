@@ -257,6 +257,63 @@
             display: none;
         }
 
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #555;
+            transition: all 0.3s;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .tab.active {
+            background: white;
+            color: #333;
+            border-bottom-color: #4caf50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        #cameraContainer {
+            text-align: center;
+            background: #000;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        #cameraContainer img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
@@ -264,6 +321,15 @@
 
             .well-selector {
                 grid-template-columns: repeat(6, 1fr);
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1;
+                min-width: 100px;
             }
         }
     </style>
@@ -291,7 +357,37 @@
             <button onclick="connectStage()">Connect</button>
         </div>
 
-        <div class="grid-container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('camera')">Camera & Position</button>
+            <button class="tab" onclick="switchTab('wells')">Well Control</button>
+            <button class="tab" onclick="switchTab('manual')">Manual Control</button>
+        </div>
+
+        <!-- Camera & Position Tab -->
+        <div id="camera-tab" class="tab-content active">
+            <div class="card">
+                <h2>Camera Feed</h2>
+                <div id="cameraContainer">
+                    <p style="color: #888;">Camera not started</p>
+                </div>
+                <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
+                <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
+            </div>
+
+            <div class="card">
+                <h2>Current Position</h2>
+                <div class="status-display">
+                    <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
+                    <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
+                </div>
+                <button onclick="updatePosition()">Refresh Position</button>
+            </div>
+        </div>
+
+        <!-- Well Control Tab -->
+        <div id="wells-tab" class="tab-content">
+            <div class="grid-container">
             <div class="card">
                 <h2>Well Control</h2>
 
@@ -321,7 +417,11 @@
 
                 <button onclick="moveToWell()">Move to Well</button>
             </div>
+            </div>
+        </div>
 
+        <!-- Manual Control Tab -->
+        <div id="manual-tab" class="tab-content">
             <div class="card">
                 <h2>Manual XY Control</h2>
 
@@ -341,26 +441,6 @@
             </div>
         </div>
 
-        <div class="grid-container">
-            <div class="card">
-                <h2>Current Status</h2>
-                <div class="status-display">
-                    <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
-                    <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
-                </div>
-                <button onclick="updatePosition()">Refresh Position</button>
-            </div>
-
-            <div class="card">
-                <h2>Camera Feed</h2>
-                <div id="cameraContainer" style="text-align: center; background: #000; min-height: 300px; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
-                    <p style="color: #888;">Camera not started</p>
-                </div>
-                <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
-                <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
-            </div>
-        </div>
-
         <div id="messageArea"></div>
     </div>
 
@@ -368,6 +448,25 @@
         const API_BASE = window.location.origin;
         let selectedPosition = 'center';
         let isConnected = false;
+
+        // Tab switching function
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
 
         // Helper function to set button loading state
         function setButtonLoading(button, isLoading) {
