@@ -93,15 +93,22 @@ async def move_xy(request: MoveXYRequest):
         raise HTTPException(status_code=400, detail="Stage not connected. Call /configure first.")
 
     try:
-        success = stage.move_to_position({
-            AxisName.X: request.x,
-            AxisName.Y: request.y
-        })
+        # Start the movement (don't wait for completion)
+        if len({request.x, request.y}) > 0:
+            positions = {}
+            if request.x is not None:
+                positions[AxisName.X] = request.x
+            if request.y is not None:
+                positions[AxisName.Y] = request.y
 
-        if success:
-            return {"status": "success", "x": request.x, "y": request.y}
-        else:
-            raise HTTPException(status_code=500, detail="Movement timed out")
+            # Use linear interpolation for coordinated movement
+            if len(positions) > 1:
+                stage.drive_linear_absolute(positions)
+            else:
+                for axis, pos in positions.items():
+                    stage.drive_absolute(axis, pos)
+
+        return {"status": "moving", "x": request.x, "y": request.y}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Movement failed: {str(e)}")
 
@@ -124,22 +131,19 @@ async def move_well(request: MoveWellRequest):
         # Calculate target coordinates
         x, y = calculator.get_well_position(request.well, position)
 
-        # Move to position
-        success = stage.move_to_position({
+        # Start the movement (don't wait for completion)
+        stage.drive_linear_absolute({
             AxisName.X: x,
             AxisName.Y: y
         })
 
-        if success:
-            return {
-                "status": "success",
-                "well": request.well,
-                "position": request.position,
-                "x": x,
-                "y": y
-            }
-        else:
-            raise HTTPException(status_code=500, detail="Movement timed out")
+        return {
+            "status": "moving",
+            "well": request.well,
+            "position": request.position,
+            "x": x,
+            "y": y
+        }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

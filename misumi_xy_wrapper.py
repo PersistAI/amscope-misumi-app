@@ -1200,20 +1200,24 @@ class MisumiXYWrapper:
     def move_to_position(self, positions: Dict[Union[AxisName, int, str], float], timeout: float = 30.0) -> bool:
         """
         Move to the specified positions.
-        
+
         Args:
             positions (Dict[Union[AxisName, int, str], float]): Dictionary of axis positions
                 Key: Axis (X, Y, Z, U, V, W)
                 Value: Absolute position
             timeout (float, optional): Timeout in seconds. Defaults to 30.0.
-            
+
         Returns:
             bool: True if all axes reached their positions within the timeout, False otherwise
         """
-        # Set absolute positions
-        for axis, position in positions.items():
-            self.drive_absolute(axis, position)
-        
+        # Use linear interpolation for multi-axis moves (faster and coordinated)
+        if len(positions) > 1:
+            self.drive_linear_absolute(positions)
+        else:
+            # Single axis move
+            for axis, position in positions.items():
+                self.drive_absolute(axis, position)
+
         # Wait for all axes to stop
         return self.wait_for_all_axes_stop(timeout=timeout)
     
