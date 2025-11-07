@@ -93,20 +93,11 @@ async def move_xy(request: MoveXYRequest):
         raise HTTPException(status_code=400, detail="Stage not connected. Call /configure first.")
 
     try:
-        # Start the movement (don't wait for completion)
-        if len({request.x, request.y}) > 0:
-            positions = {}
-            if request.x is not None:
-                positions[AxisName.X] = request.x
-            if request.y is not None:
-                positions[AxisName.Y] = request.y
-
-            # Use linear interpolation for coordinated movement
-            if len(positions) > 1:
-                stage.drive_linear_absolute(positions)
-            else:
-                for axis, pos in positions.items():
-                    stage.drive_absolute(axis, pos)
+        # Start the movement for each axis (don't wait for completion)
+        if request.x is not None:
+            stage.drive_absolute(AxisName.X, request.x)
+        if request.y is not None:
+            stage.drive_absolute(AxisName.Y, request.y)
 
         return {"status": "moving", "x": request.x, "y": request.y}
     except Exception as e:
@@ -131,11 +122,9 @@ async def move_well(request: MoveWellRequest):
         # Calculate target coordinates
         x, y = calculator.get_well_position(request.well, position)
 
-        # Start the movement (don't wait for completion)
-        stage.drive_linear_absolute({
-            AxisName.X: x,
-            AxisName.Y: y
-        })
+        # Start the movement for each axis (don't wait for completion)
+        stage.drive_absolute(AxisName.X, x)
+        stage.drive_absolute(AxisName.Y, y)
 
         return {
             "status": "moving",

@@ -715,12 +715,13 @@ class MisumiXYWrapper:
     def drive_absolute(self, axis: Union[AxisName, int, str], position: float) -> None:
         """
         Drive the specified axis to the absolute position.
-        
+
         Args:
             axis (Union[AxisName, int, str]): Axis to drive
             position (float): Absolute position
         """
         self.select_axis(axis)
+        logger.info(f"Driving axis {axis} to absolute position {position}")
         self._send_command(f":GOABS {self._format_value(position)}")
     
     def drive_to_teaching_point(self, point_number: int) -> None:
@@ -763,14 +764,14 @@ class MisumiXYWrapper:
     def drive_linear_absolute(self, axis_positions: Dict[Union[AxisName, int, str], float]) -> None:
         """
         Drive in linear interpolation mode (absolute).
-        
+
         Args:
             axis_positions (Dict[Union[AxisName, int, str], float]): Dictionary of axis positions
                 Key: Axis (X, Y, Z, U, V, W)
                 Value: Absolute position
         """
         command = "GOLA "
-        
+
         for axis, position in axis_positions.items():
             if isinstance(axis, AxisName):
                 axis_name = axis.name
@@ -780,13 +781,14 @@ class MisumiXYWrapper:
                 axis_name = axis.upper()
             else:
                 raise ValueError("Invalid axis. Must be 1-6 or X, Y, Z, U, V, W")
-            
+
             command += f"{axis_name}{self._format_value(position)}_"
-        
+
         # Remove trailing underscore
         if command.endswith('_'):
             command = command[:-1]
-        
+
+        logger.info(f"Linear absolute command: {command}")
         self._send_command(command)
     
     def stop(self, axis: Optional[Union[AxisName, int, str]] = None, mode: Union[StopMode, int, str] = StopMode.EMERGENCY) -> None:
