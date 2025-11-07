@@ -161,8 +161,8 @@ class WellPlateCalculator:
         center_x, center_y = self.get_well_center(well_name)
 
         # Calculate offset from center based on position
-        # Using 70% of radius for edge positions to avoid hitting the wall
-        offset_distance = (self.config.well_diameter / 2) * 0.7
+        # Using 1800 steps offset for edge positions
+        offset_distance = 1800
 
         offset_x = 0.0
         offset_y = 0.0
