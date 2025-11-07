@@ -829,16 +829,18 @@ class MisumiXYWrapper:
     def get_position(self, axis: Union[AxisName, int, str]) -> float:
         """
         Get current position of the specified axis.
-        
+
         Args:
             axis (Union[AxisName, int, str]): Axis to get position
-            
+
         Returns:
             float: Current position
         """
         self.select_axis(axis)
         response = self._send_command(":POS?")
-        return float(response)
+        position = float(response)
+        logger.debug(f"Position of axis {axis}: {position}")
+        return position
     
     def get_status(self, axis: Union[AxisName, int, str]) -> Dict[str, bool]:
         """

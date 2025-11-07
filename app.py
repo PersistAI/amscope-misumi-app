@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 import os
+import cv2
+import asyncio
 
 from misumi_xy_wrapper import MisumiXYWrapper, AxisName, DriveMode
 from well_plate_config import WellPlateCalculator, WellPosition, WellPlateConfig
@@ -24,6 +26,8 @@ app.add_middleware(
 stage: Optional[MisumiXYWrapper] = None
 # Use 24-well plate as default
 calculator: WellPlateCalculator = WellPlateCalculator(WellPlateCalculator.STANDARD_24_WELL)
+# Global camera instance
+camera: Optional[cv2.VideoCapture] = None
 
 # Pydantic models for request/response
 class MoveXYRequest(BaseModel):
@@ -66,10 +70,12 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Disconnect from stage on shutdown"""
-    global stage
+    """Disconnect from stage and camera on shutdown"""
+    global stage, camera
     if stage:
         stage.disconnect()
+    if camera:
+        camera.release()
 
 @app.post("/configure")
 async def configure_stage(config: StageConfig):
@@ -91,7 +97,8 @@ async def move_xy(request: MoveXYRequest):
     """Move stage to absolute XY coordinates"""
     if not stage:
         raise HTTPException(status_code=400, detail="Stage not connected. Call /configure first.")
-
+    
+    print(request.y)
     try:
         # Start the movement for each axis (don't wait for completion)
         if request.x is not None:
@@ -252,6 +259,67 @@ async def get_wellplate_config():
         "plate_origin_y": calculator.config.plate_origin_y,
         "name": calculator.config.name
     }
+
+@app.post("/camera/start")
+async def start_camera():
+    """Initialize and start the camera"""
+    global camera
+    try:
+        if camera is not None and camera.isOpened():
+            return {"status": "success", "message": "Camera already running"}
+
+        camera = cv2.VideoCapture(0)
+        if not camera.isOpened():
+            raise HTTPException(status_code=500, detail="Failed to open camera")
+
+        return {"status": "success", "message": "Camera started"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start camera: {str(e)}")
+
+@app.post("/camera/stop")
+async def stop_camera():
+    """Stop the camera"""
+    global camera
+    try:
+        if camera:
+            camera.release()
+            camera = None
+        return {"status": "success", "message": "Camera stopped"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to stop camera: {str(e)}")
+
+def generate_frames():
+    """Generator function to yield camera frames"""
+    global camera
+    while True:
+        if camera is None or not camera.isOpened():
+            break
+
+        success, frame = camera.read()
+        if not success:
+            break
+
+        # Encode frame as JPEG
+        ret, buffer = cv2.imencode('.jpg', frame)
+        if not ret:
+            continue
+
+        frame_bytes = buffer.tobytes()
+
+        # Yield frame in multipart format
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+@app.get("/camera/stream")
+async def video_stream():
+    """Stream video from the camera"""
+    if camera is None or not camera.isOpened():
+        raise HTTPException(status_code=400, detail="Camera not started. Call /camera/start first.")
+
+    return StreamingResponse(
+        generate_frames(),
+        media_type="multipart/x-mixed-replace; boundary=frame"
+    )
 
 @app.get("/")
 async def read_root():

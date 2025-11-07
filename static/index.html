@@ -341,13 +341,24 @@
             </div>
         </div>
 
-        <div class="card">
-            <h2>Current Status</h2>
-            <div class="status-display">
-                <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
-                <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
+        <div class="grid-container">
+            <div class="card">
+                <h2>Current Status</h2>
+                <div class="status-display">
+                    <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
+                    <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
+                </div>
+                <button onclick="updatePosition()">Refresh Position</button>
             </div>
-            <button onclick="updatePosition()">Refresh Position</button>
+
+            <div class="card">
+                <h2>Camera Feed</h2>
+                <div id="cameraContainer" style="text-align: center; background: #000; min-height: 300px; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
+                    <p style="color: #888;">Camera not started</p>
+                </div>
+                <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
+                <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
+            </div>
         </div>
 
         <div id="messageArea"></div>
@@ -608,6 +619,60 @@
             setTimeout(() => {
                 messageArea.innerHTML = '';
             }, 5000);
+        }
+
+        async function startCamera() {
+            const button = event.target;
+            setButtonLoading(button, true);
+            try {
+                const response = await fetch(`${API_BASE}/camera/start`, { method: 'POST' });
+
+                if (response.ok) {
+                    // Show the video stream
+                    const cameraContainer = document.getElementById('cameraContainer');
+                    cameraContainer.innerHTML = `<img src="${API_BASE}/camera/stream" style="max-width: 100%; height: auto; border-radius: 6px;" alt="Camera feed">`;
+
+                    // Toggle button visibility
+                    document.getElementById('startCameraBtn').style.display = 'none';
+                    document.getElementById('stopCameraBtn').style.display = 'block';
+
+                    showMessage('Camera started successfully', 'success');
+                } else {
+                    const error = await response.json();
+                    showMessage(`Camera start failed: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Camera error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        async function stopCamera() {
+            const button = event.target;
+            setButtonLoading(button, true);
+            try {
+                const response = await fetch(`${API_BASE}/camera/stop`, { method: 'POST' });
+
+                if (response.ok) {
+                    // Clear the video stream
+                    const cameraContainer = document.getElementById('cameraContainer');
+                    cameraContainer.innerHTML = '<p style="color: #888;">Camera not started</p>';
+
+                    // Toggle button visibility
+                    document.getElementById('startCameraBtn').style.display = 'block';
+                    document.getElementById('stopCameraBtn').style.display = 'none';
+
+                    showMessage('Camera stopped', 'success');
+                } else {
+                    const error = await response.json();
+                    showMessage(`Camera stop failed: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Camera error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
+            }
         }
 
         // Initialize on page load
