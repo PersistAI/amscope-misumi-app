@@ -27,13 +27,13 @@ class WellPosition(Enum):
 @dataclass
 class WellPlateConfig:
     """Configuration for a well plate"""
-    rows: int  # Number of rows (e.g., 8 for A-H)
-    cols: int  # Number of columns (e.g., 12 for 1-12)
-    well_spacing_x: float  # Distance between well centers in X direction (mm)
-    well_spacing_y: float  # Distance between well centers in Y direction (mm)
+    rows: int  # Number of rows (e.g., 4 for A-D)
+    cols: int  # Number of columns (e.g., 6 for 1-6)
+    well_spacing_x: float  # Distance between well centers in X direction (stage units)
+    well_spacing_y: float  # Distance between well centers in Y direction (stage units)
     well_diameter: float  # Diameter of each well (mm)
-    plate_origin_x: float  # X coordinate of well A1 center (mm)
-    plate_origin_y: float  # Y coordinate of well A1 center (mm)
+    plate_origin_x: float  # X coordinate of well A1 center (stage units)
+    plate_origin_y: float  # Y coordinate of well A1 center (stage units)
 
     @property
     def name(self) -> str:
@@ -67,11 +67,11 @@ class WellPlateCalculator:
     STANDARD_24_WELL = WellPlateConfig(
         rows=4,
         cols=6,
-        well_spacing_x=19.3,
-        well_spacing_y=19.3,
+        well_spacing_x=9500,  # Step distance between wells
+        well_spacing_y=9500,  # Step distance between wells
         well_diameter=15.6,
-        plate_origin_x=0.0,
-        plate_origin_y=0.0
+        plate_origin_x=58000,  # A1 X position
+        plate_origin_y=32000   # A1 Y position
     )
 
     def __init__(self, config: WellPlateConfig = None):
@@ -137,12 +137,13 @@ class WellPlateCalculator:
             well_name: Well name (e.g., 'A1', 'H12')
 
         Returns:
-            Tuple of (x, y) coordinates in mm
+            Tuple of (x, y) coordinates
         """
         row_idx, col_idx = self.parse_well_name(well_name)
 
-        x = self.config.plate_origin_x + (col_idx * self.config.well_spacing_x)
-        y = self.config.plate_origin_y + (row_idx * self.config.well_spacing_y)
+        # Stage moves to lower X values from col 1 to 6, and lower Y values from row A to D
+        x = self.config.plate_origin_x - (col_idx * self.config.well_spacing_x)
+        y = self.config.plate_origin_y - (row_idx * self.config.well_spacing_y)
 
         return x, y
 
