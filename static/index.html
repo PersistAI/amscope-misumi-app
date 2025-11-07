@@ -111,6 +111,37 @@
             background: #3d8b40;
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        button.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        button.loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         button.stop-btn {
             background: #d32f2f;
         }
@@ -327,6 +358,21 @@
         let selectedPosition = 'center';
         let isConnected = false;
 
+        // Helper function to set button loading state
+        function setButtonLoading(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                button.classList.add('loading');
+                button.dataset.originalText = button.textContent;
+            } else {
+                button.disabled = false;
+                button.classList.remove('loading');
+                if (button.dataset.originalText) {
+                    button.textContent = button.dataset.originalText;
+                }
+            }
+        }
+
         // Initialize well selector
         async function initializeWells() {
             try {
@@ -364,9 +410,11 @@
         }
 
         async function connectStage() {
+            const button = event.target;
             const port = document.getElementById('comPort').value;
             const baudrate = parseInt(document.getElementById('baudrate').value);
 
+            setButtonLoading(button, true);
             try {
                 const response = await fetch(`${API_BASE}/configure`, {
                     method: 'POST',
@@ -385,6 +433,8 @@
                 }
             } catch (error) {
                 showMessage(`Connection error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
             }
         }
 
@@ -400,6 +450,8 @@
                 return;
             }
 
+            const button = event.target;
+            setButtonLoading(button, true);
             try {
                 const response = await fetch(`${API_BASE}/move/well`, {
                     method: 'POST',
@@ -417,6 +469,8 @@
                 }
             } catch (error) {
                 showMessage(`Move error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
             }
         }
 
@@ -434,6 +488,8 @@
                 return;
             }
 
+            const button = event.target;
+            setButtonLoading(button, true);
             try {
                 const response = await fetch(`${API_BASE}/move/xy`, {
                     method: 'POST',
@@ -451,6 +507,8 @@
                 }
             } catch (error) {
                 showMessage(`Move error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
             }
         }
 
@@ -464,6 +522,8 @@
                 return;
             }
 
+            const button = event.target;
+            setButtonLoading(button, true);
             try {
                 showMessage('Homing axes...', 'success');
                 const response = await fetch(`${API_BASE}/home`, { method: 'POST' });
@@ -477,10 +537,14 @@
                 }
             } catch (error) {
                 showMessage(`Homing error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
             }
         }
 
         async function stopStage() {
+            const button = event.target;
+            setButtonLoading(button, true);
             try {
                 const response = await fetch(`${API_BASE}/stop`, { method: 'POST' });
 
@@ -493,12 +557,18 @@
                 }
             } catch (error) {
                 showMessage(`Stop error: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(button, false);
             }
         }
 
         async function updatePosition() {
             if (!isConnected) return;
 
+            const button = event?.target;
+            if (button) {
+                setButtonLoading(button, true);
+            }
             try {
                 const response = await fetch(`${API_BASE}/position`);
 
@@ -511,6 +581,10 @@
                 }
             } catch (error) {
                 console.error('Position update error:', error);
+            } finally {
+                if (button) {
+                    setButtonLoading(button, false);
+                }
             }
         }
 

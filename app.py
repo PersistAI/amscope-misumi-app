@@ -76,9 +76,12 @@ async def configure_stage(config: StageConfig):
     """Configure and connect to the stage"""
     global stage
     try:
+        # Only disconnect and reconnect if port or baudrate changed
         if stage:
+            if stage.port == config.port and stage.baudrate == config.baudrate and stage.connected:
+                return {"status": "connected", "port": config.port, "message": "Already connected"}
             stage.disconnect()
-        stage = MisumiXYWrapper(port=config.port, baudrate=config.baudrate)
+        stage = MisumiXYWrapper(port=config.port, baudrate=config.baudrate, auto_initialize=False)
         return {"status": "connected", "port": config.port}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to connect: {str(e)}")
@@ -155,6 +158,18 @@ async def get_position():
         return PositionResponse(x=x, y=y)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get position: {str(e)}")
+
+@app.post("/initialize")
+async def initialize_stage():
+    """Initialize the stage (set memory switches, speeds, and home axes)"""
+    if not stage:
+        raise HTTPException(status_code=400, detail="Stage not connected. Call /configure first.")
+
+    try:
+        stage.initialize()
+        return {"status": "success", "message": "Stage initialized and homed"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Initialization failed: {str(e)}")
 
 @app.post("/home")
 async def home_stage():

@@ -99,14 +99,15 @@ class MisumiXYWrapper:
     It implements the communication protocol described in the DS102/DS112 Series Operation Manual.
     """
 
-    def __init__(self, port: str, baudrate: int = 38400, timeout: float = 1.0):
+    def __init__(self, port: str, baudrate: int = 38400, timeout: float = 1.0, auto_initialize: bool = False):
         """
         Initialize the MisumiXYWrapper.
-        
+
         Args:
             port (str): Serial port name (e.g., 'COM1', '/dev/ttyUSB0')
             baudrate (int, optional): Baud rate. Defaults to 38400.
             timeout (float, optional): Serial timeout in seconds. Defaults to 1.0.
+            auto_initialize (bool, optional): Automatically initialize the stage (home axes). Defaults to False.
         """
         self.port = port
         self.baudrate = baudrate
@@ -115,7 +116,8 @@ class MisumiXYWrapper:
         self.connected = False
         self.delimiter = '\r'  # CR (Hex 0D)
         self.connect()
-        self.initialize()
+        if auto_initialize:
+            self.initialize()
     
     def initialize(self):
         self.set_memory_switch_0(1,3)
