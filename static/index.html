@@ -357,66 +357,68 @@
             <button onclick="connectStage()">Connect</button>
         </div>
 
+        <!-- Camera Feed - Always Visible -->
+        <div class="card">
+            <h2>Camera Feed</h2>
+            <div id="cameraContainer">
+                <p style="color: #888;">Camera not started</p>
+            </div>
+            <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
+            <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
+        </div>
+
+        <!-- Current Position - Always Visible -->
+        <div class="card">
+            <h2>Current Position</h2>
+            <div class="status-display">
+                <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
+                <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
+            </div>
+            <button onclick="updatePosition()">Refresh Position</button>
+        </div>
+
         <!-- Tab Navigation -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('camera')">Camera & Position</button>
-            <button class="tab" onclick="switchTab('wells')">Well Control</button>
+            <button class="tab active" onclick="switchTab('wells')">Well Control</button>
             <button class="tab" onclick="switchTab('manual')">Manual Control</button>
         </div>
 
-        <!-- Camera & Position Tab -->
-        <div id="camera-tab" class="tab-content active">
-            <div class="card">
-                <h2>Camera Feed</h2>
-                <div id="cameraContainer">
-                    <p style="color: #888;">Camera not started</p>
-                </div>
-                <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
-                <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
-            </div>
-
-            <div class="card">
-                <h2>Current Position</h2>
-                <div class="status-display">
-                    <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
-                    <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
-                </div>
-                <button onclick="updatePosition()">Refresh Position</button>
-            </div>
-        </div>
-
         <!-- Well Control Tab -->
-        <div id="wells-tab" class="tab-content">
-            <div class="grid-container">
+        <div id="wells-tab" class="tab-content active">
             <div class="card">
                 <h2>Well Control</h2>
 
-                <div class="form-group">
-                    <label for="wellInput">Select Well:</label>
-                    <input type="text" id="wellInput" placeholder="e.g., A1, B12" value="A1">
-                </div>
+                <div class="grid-container">
+                    <div>
+                        <div class="form-group">
+                            <label for="wellInput">Select Well:</label>
+                            <input type="text" id="wellInput" placeholder="e.g., A1, B12" value="A1">
+                        </div>
 
-                <div class="well-selector" id="wellSelector">
-                    <!-- Wells will be generated dynamically -->
-                </div>
+                        <div class="well-selector" id="wellSelector">
+                            <!-- Wells will be generated dynamically -->
+                        </div>
+                    </div>
 
-                <div class="form-group" style="margin-top: 15px;">
-                    <label>Position in Well:</label>
-                    <div class="position-grid">
-                        <button class="position-btn" onclick="selectPosition('top_left')">↖</button>
-                        <button class="position-btn" onclick="selectPosition('top')">↑</button>
-                        <button class="position-btn" onclick="selectPosition('top_right')">↗</button>
-                        <button class="position-btn" onclick="selectPosition('left')">←</button>
-                        <button class="position-btn active" onclick="selectPosition('center')">●</button>
-                        <button class="position-btn" onclick="selectPosition('right')">→</button>
-                        <button class="position-btn" onclick="selectPosition('bottom_left')">↙</button>
-                        <button class="position-btn" onclick="selectPosition('bottom')">↓</button>
-                        <button class="position-btn" onclick="selectPosition('bottom_right')">↘</button>
+                    <div>
+                        <div class="form-group">
+                            <label>Position in Well:</label>
+                            <div class="position-grid">
+                                <button class="position-btn" onclick="selectPosition('top_left')">↖</button>
+                                <button class="position-btn" onclick="selectPosition('top')">↑</button>
+                                <button class="position-btn" onclick="selectPosition('top_right')">↗</button>
+                                <button class="position-btn" onclick="selectPosition('left')">←</button>
+                                <button class="position-btn active" onclick="selectPosition('center')">●</button>
+                                <button class="position-btn" onclick="selectPosition('right')">→</button>
+                                <button class="position-btn" onclick="selectPosition('bottom_left')">↙</button>
+                                <button class="position-btn" onclick="selectPosition('bottom')">↓</button>
+                                <button class="position-btn" onclick="selectPosition('bottom_right')">↘</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <button onclick="moveToWell()">Move to Well</button>
-            </div>
             </div>
         </div>
 
