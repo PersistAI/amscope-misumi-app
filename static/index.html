@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -31,11 +31,23 @@
             font-weight: 600;
         }
 
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .left-column, .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
         .card {
             background: white;
             border-radius: 8px;
             padding: 25px;
-            margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 1px solid #e0e0e0;
         }
@@ -319,6 +331,10 @@
                 font-size: 1.8em;
             }
 
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
             .well-selector {
                 grid-template-columns: repeat(6, 1fr);
             }
@@ -338,108 +354,116 @@
     <div class="container">
         <h1>Amscope Misumi XY Stage Controller</h1>
 
-        <div class="card">
-            <h2>Connection</h2>
-            <div class="connection-status status-disconnected" id="connectionStatus">
-                Disconnected
-            </div>
-
-            <div class="form-group">
-                <label for="comPort">COM Port:</label>
-                <input type="text" id="comPort" placeholder="e.g., COM16" value="COM16">
-            </div>
-
-            <div class="form-group">
-                <label for="baudrate">Baudrate:</label>
-                <input type="number" id="baudrate" value="38400">
-            </div>
-
-            <button onclick="connectStage()">Connect</button>
-        </div>
-
-        <!-- Camera Feed - Always Visible -->
-        <div class="card">
-            <h2>Camera Feed</h2>
-            <div id="cameraContainer">
-                <p style="color: #888;">Camera not started</p>
-            </div>
-            <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
-            <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
-        </div>
-
-        <!-- Current Position - Always Visible -->
-        <div class="card">
-            <h2>Current Position</h2>
-            <div class="status-display">
-                <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
-                <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
-            </div>
-            <button onclick="updatePosition()">Refresh Position</button>
-        </div>
-
-        <!-- Tab Navigation -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('wells')">Well Control</button>
-            <button class="tab" onclick="switchTab('manual')">Manual Control</button>
-        </div>
-
-        <!-- Well Control Tab -->
-        <div id="wells-tab" class="tab-content active">
-            <div class="card">
-                <h2>Well Control</h2>
-
-                <div class="grid-container">
-                    <div>
-                        <div class="form-group">
-                            <label for="wellInput">Select Well:</label>
-                            <input type="text" id="wellInput" placeholder="e.g., A1, B12" value="A1">
-                        </div>
-
-                        <div class="well-selector" id="wellSelector">
-                            <!-- Wells will be generated dynamically -->
-                        </div>
+        <div class="main-layout">
+            <!-- Left Column: Connection & Camera -->
+            <div class="left-column">
+                <div class="card">
+                    <h2>Connection</h2>
+                    <div class="connection-status status-disconnected" id="connectionStatus">
+                        Disconnected
                     </div>
 
-                    <div>
-                        <div class="form-group">
-                            <label>Position in Well:</label>
-                            <div class="position-grid">
-                                <button class="position-btn" onclick="selectPosition('top_left')">↖</button>
-                                <button class="position-btn" onclick="selectPosition('top')">↑</button>
-                                <button class="position-btn" onclick="selectPosition('top_right')">↗</button>
-                                <button class="position-btn" onclick="selectPosition('left')">←</button>
-                                <button class="position-btn active" onclick="selectPosition('center')">●</button>
-                                <button class="position-btn" onclick="selectPosition('right')">→</button>
-                                <button class="position-btn" onclick="selectPosition('bottom_left')">↙</button>
-                                <button class="position-btn" onclick="selectPosition('bottom')">↓</button>
-                                <button class="position-btn" onclick="selectPosition('bottom_right')">↘</button>
+                    <div class="form-group">
+                        <label for="comPort">COM Port:</label>
+                        <input type="text" id="comPort" placeholder="e.g., COM16" value="COM16">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="baudrate">Baudrate:</label>
+                        <input type="number" id="baudrate" value="38400">
+                    </div>
+
+                    <button onclick="connectStage()">Connect</button>
+                </div>
+
+                <!-- Camera Feed - Always Visible -->
+                <div class="card">
+                    <h2>Camera Feed</h2>
+                    <div id="cameraContainer">
+                        <p style="color: #888;">Camera not started</p>
+                    </div>
+                    <button onclick="startCamera()" id="startCameraBtn">Start Camera</button>
+                    <button onclick="stopCamera()" id="stopCameraBtn" style="display: none;">Stop Camera</button>
+                </div>
+            </div>
+
+            <!-- Right Column: Current Position & Controls -->
+            <div class="right-column">
+                <!-- Current Position - Always Visible -->
+                <div class="card">
+                    <h2>Current Position</h2>
+                    <div class="status-display">
+                        <p><strong>X Position:</strong> <span id="currentX">--</span> mm</p>
+                        <p><strong>Y Position:</strong> <span id="currentY">--</span> mm</p>
+                    </div>
+                    <button onclick="updatePosition()">Refresh Position</button>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('wells')">Well Control</button>
+                    <button class="tab" onclick="switchTab('manual')">Manual Control</button>
+                </div>
+
+                <!-- Well Control Tab -->
+                <div id="wells-tab" class="tab-content active">
+                    <div class="card">
+                        <h2>Well Control</h2>
+
+                        <div class="grid-container">
+                            <div>
+                                <div class="form-group">
+                                    <label for="wellInput">Select Well:</label>
+                                    <input type="text" id="wellInput" placeholder="e.g., A1, B12" value="A1">
+                                </div>
+
+                                <div class="well-selector" id="wellSelector">
+                                    <!-- Wells will be generated dynamically -->
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="form-group">
+                                    <label>Position in Well:</label>
+                                    <div class="position-grid">
+                                        <button class="position-btn" onclick="selectPosition('top_left')">↖</button>
+                                        <button class="position-btn" onclick="selectPosition('top')">↑</button>
+                                        <button class="position-btn" onclick="selectPosition('top_right')">↗</button>
+                                        <button class="position-btn" onclick="selectPosition('left')">←</button>
+                                        <button class="position-btn active" onclick="selectPosition('center')">●</button>
+                                        <button class="position-btn" onclick="selectPosition('right')">→</button>
+                                        <button class="position-btn" onclick="selectPosition('bottom_left')">↙</button>
+                                        <button class="position-btn" onclick="selectPosition('bottom')">↓</button>
+                                        <button class="position-btn" onclick="selectPosition('bottom_right')">↘</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        <button onclick="moveToWell()">Move to Well</button>
                     </div>
                 </div>
 
-                <button onclick="moveToWell()">Move to Well</button>
-            </div>
-        </div>
+                <!-- Manual Control Tab -->
+                <div id="manual-tab" class="tab-content">
+                    <div class="card">
+                        <h2>Manual XY Control</h2>
 
-        <!-- Manual Control Tab -->
-        <div id="manual-tab" class="tab-content">
-            <div class="card">
-                <h2>Manual XY Control</h2>
+                        <div class="form-group">
+                            <label for="xPos">X Position (mm):</label>
+                            <input type="number" id="xPos" step="0.1" placeholder="0.0">
+                        </div>
 
-                <div class="form-group">
-                    <label for="xPos">X Position (mm):</label>
-                    <input type="number" id="xPos" step="0.1" placeholder="0.0">
+                        <div class="form-group">
+                            <label for="yPos">Y Position (mm):</label>
+                            <input type="number" id="yPos" step="0.1" placeholder="0.0">
+                        </div>
+
+                        <button onclick="moveToXY()">Move to XY</button>
+                        <button class="home-btn" onclick="homeStage()">Home All Axes</button>
+                        <button class="stop-btn" onclick="stopStage()">Emergency Stop</button>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="yPos">Y Position (mm):</label>
-                    <input type="number" id="yPos" step="0.1" placeholder="0.0">
-                </div>
-
-                <button onclick="moveToXY()">Move to XY</button>
-                <button class="home-btn" onclick="homeStage()">Home All Axes</button>
-                <button class="stop-btn" onclick="stopStage()">Emergency Stop</button>
             </div>
         </div>
 
