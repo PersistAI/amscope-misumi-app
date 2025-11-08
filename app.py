@@ -158,6 +158,9 @@ async def get_position():
 
         return PositionResponse(x=x, y=y)
     except Exception as e:
+        import traceback
+        print(f"Error getting position: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Failed to get position: {str(e)}")
 
 @app.post("/initialize")
@@ -269,12 +272,30 @@ async def start_camera():
         if camera is not None and camera.isOpened():
             return {"status": "success", "message": "Camera already running"}
 
-        camera = cv2.VideoCapture(0)
-        if not camera.isOpened():
-            raise HTTPException(status_code=500, detail="Failed to open camera")
+        # Try multiple camera indices (0-5) to find available camera
+        for i in range(6):
+            print(f"Trying camera index {i}...")
+            camera = cv2.VideoCapture(i)
+            if camera.isOpened():
+                # Test if we can actually read a frame
+                ret, _ = camera.read()
+                if ret:
+                    print(f"Successfully opened camera at index {i}")
+                    return {"status": "success", "message": f"Camera started at index {i}"}
+                else:
+                    camera.release()
+                    camera = None
+            else:
+                camera = None
 
-        return {"status": "success", "message": "Camera started"}
+        # If we get here, no camera was found
+        raise HTTPException(status_code=500, detail="No camera found. Tried indices 0-5.")
+    except HTTPException:
+        raise
     except Exception as e:
+        import traceback
+        print(f"Error starting camera: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Failed to start camera: {str(e)}")
 
 @app.post("/camera/stop")
