@@ -166,13 +166,13 @@ class WellPlateCalculator:
         if position == WellPosition.CENTER:
             pass  # No offset
         elif position == WellPosition.TOP:
-            offset_x = -offset_distance  # Top means left (decrease X)
+            offset_y = offset_distance  # Top means up (increase Y)
         elif position == WellPosition.BOTTOM:
-            offset_x = offset_distance  # Bottom means right (increase X)
+            offset_y = -offset_distance  # Bottom means down (decrease Y)
         elif position == WellPosition.LEFT:
-            offset_y = -offset_distance  # Left means down (decrease Y)
+            offset_x = -offset_distance  # Left means left (decrease X)
         elif position == WellPosition.RIGHT:
-            offset_y = offset_distance  # Right means up (increase Y)
+            offset_x = offset_distance  # Right means right (increase X)
 
         return center_x + offset_x, center_y + offset_y
 
