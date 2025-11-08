@@ -128,6 +128,7 @@ async def move_well(request: MoveWellRequest):
 
         # Calculate target coordinates
         x, y = calculator.get_well_position(request.well, position)
+        print(f"Moving to well {request.well} at position {request.position}: X={x}, Y={y}")
 
         # Start the movement for each axis (don't wait for completion)
         stage.drive_absolute(AxisName.X, x)

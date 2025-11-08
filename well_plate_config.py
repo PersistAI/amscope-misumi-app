@@ -18,10 +18,6 @@ class WellPosition(Enum):
     BOTTOM = "bottom"
     LEFT = "left"
     RIGHT = "right"
-    TOP_LEFT = "top_left"
-    TOP_RIGHT = "top_right"
-    BOTTOM_LEFT = "bottom_left"
-    BOTTOM_RIGHT = "bottom_right"
 
 
 @dataclass
@@ -170,25 +166,13 @@ class WellPlateCalculator:
         if position == WellPosition.CENTER:
             pass  # No offset
         elif position == WellPosition.TOP:
-            offset_y = -offset_distance  # Y increases downward typically
+            offset_x = -offset_distance  # Top means left (decrease X)
         elif position == WellPosition.BOTTOM:
-            offset_y = offset_distance
+            offset_x = offset_distance  # Bottom means right (increase X)
         elif position == WellPosition.LEFT:
-            offset_x = -offset_distance
+            offset_y = -offset_distance  # Left means down (decrease Y)
         elif position == WellPosition.RIGHT:
-            offset_x = offset_distance
-        elif position == WellPosition.TOP_LEFT:
-            offset_x = -offset_distance
-            offset_y = -offset_distance
-        elif position == WellPosition.TOP_RIGHT:
-            offset_x = offset_distance
-            offset_y = -offset_distance
-        elif position == WellPosition.BOTTOM_LEFT:
-            offset_x = -offset_distance
-            offset_y = offset_distance
-        elif position == WellPosition.BOTTOM_RIGHT:
-            offset_x = offset_distance
-            offset_y = offset_distance
+            offset_y = offset_distance  # Right means up (increase Y)
 
         return center_x + offset_x, center_y + offset_y
 
